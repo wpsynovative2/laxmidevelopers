@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build && node scripts/flatten-prefetch.mjs",
-    "start": "next start",
+    "start": "node scripts/serve-static.mjs",
     "lint": "eslint",
     "images": "node scripts/optimize-images.mjs && node scripts/make-logos.mjs",
     "intro": "node scripts/make-intro.mjs"
@@ -22,6 +22,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

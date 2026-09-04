@@ -16,12 +16,23 @@
  * flat name the client actually asks for, leaving the originals in place.
  *
  * Runs automatically after `npm run build`.
+ *
+ * It is a fix-up for *dumb static hosting* only. On a host that runs Next behind
+ * its own adapter — Vercel, Netlify, Cloudflare — the adapter overrides
+ * `output: "export"`, there is no `out/` to patch, and the server rewrites these
+ * paths correctly on its own. So a missing `out/` is reported and skipped rather
+ * than failing the build: this step has nothing useful to do there.
  */
 
 import { readdir, copyFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const OUT = path.join(process.cwd(), "out");
+// Resolved from this file, not `process.cwd()`. A host that invokes the script
+// from somewhere else would otherwise look for `out/` in the wrong place and
+// wrongly conclude the export is missing.
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const OUT = path.join(ROOT, "out");
 
 /** Collects every file under `dir`, returned as paths relative to `dir`. */
 async function walk(dir, base = dir) {
@@ -40,8 +51,26 @@ async function run() {
   try {
     files = await walk(OUT);
   } catch {
-    console.error("flatten-prefetch: no out/ directory — run `next build` first.");
-    process.exitCode = 1;
+    // Say what was looked for and what is actually there, so the reason is
+    // visible in a CI log without a rebuild.
+    let siblings = "";
+    try {
+      siblings = (await readdir(ROOT)).filter((n) => !n.startsWith(".")).join(", ");
+    } catch {
+      siblings = "(could not read)";
+    }
+    console.log(
+      [
+        `flatten-prefetch: skipped — no export at ${OUT}.`,
+        "  This step only patches prefetch paths for plain static hosts. If this build is",
+        "  deployed through a Next adapter (Vercel, Netlify, Cloudflare), that adapter",
+        '  overrides `output: "export"` and rewrites these paths itself — nothing to do.',
+        "  If you did expect a static export, check that the host runs `next build` against",
+        "  this repo's next.config.ts and publishes out/.",
+        `  cwd: ${process.cwd()}`,
+        `  root contains: ${siblings}`,
+      ].join("\n"),
+    );
     return;
   }
 

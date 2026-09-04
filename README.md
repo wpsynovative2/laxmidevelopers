@@ -18,12 +18,36 @@ npm run dev
 | ----------------- | ----------------------------------------------------------------------- |
 | `npm run dev`     | Dev server on <http://localhost:3000>                                    |
 | `npm run build`   | Static export to `out/`, then flattens the prefetch payloads (see below) |
+| `npm start`       | Serves `out/` on `$PORT` — for Node hosts only (see Deploying)           |
 | `npm run images`  | Regenerates `public/media/` from `assets/source-images/`                 |
 | `npm run intro`   | Re-cuts the intro splash clip (needs `ffmpeg` on PATH)                   |
 | `npm run lint`    | ESLint                                                                   |
 
-`npm run build` writes a plain `out/` folder — upload it to any static host
-(Hostinger, Netlify, S3, GitHub Pages). There is no Node server to run.
+`npm run build` writes a plain `out/` folder. See **Deploying** below.
+
+## Deploying
+
+The site is a full static export: no API routes, no server actions, no server-side
+rendering. Both forms POST straight from the browser to Google Apps Script.
+
+**Static hosting** (hPanel File Manager, Netlify, S3, GitHub Pages) — the simplest
+option and the one to prefer. Run `npm run build` and upload the contents of `out/`
+to the web root. Nothing needs to stay running.
+
+**A Node host** (Hostinger's Node.js app runtime, a container) — two things differ:
+
+1. **`next start` will not work.** It exits with
+   `"next start" does not work with "output: export" configuration`. So `npm start`
+   is wired to [`scripts/serve-static.mjs`](scripts/serve-static.mjs) instead: a
+   dependency-free static server that reads `$PORT`, binds `0.0.0.0`, redirects
+   `/about` → `/about/` to match `trailingSlash`, serves `404.html` with a real 404,
+   supports range requests so the intro video can stream, and caches hashed assets
+   for a year while keeping HTML revalidating. It has no dependencies on purpose, so
+   it survives `npm ci --omit=dev`.
+2. **Set the host's start command to `npm start` and its build command to
+   `npm run build`.** If the build log says `flatten-prefetch: skipped`, the export
+   never landed — that message prints the working directory and what it found, which
+   is usually enough to see why.
 
 ## Pages
 
@@ -31,7 +55,7 @@ npm run dev
 | -------------------------- | ----------------------------------------------------------------- |
 | `/`                        | The company: hero, stats, about, services, portfolio, values, process, testimonials, form |
 | `/about`                   | Founder story, expertise, offerings, timeline                      |
-| `/projects`                | Filterable grid — Upcoming / Ongoing / Completed                   |
+| `/projects`                | Filterable grid — Ongoing / Upcoming (see Statuses below)          |
 | `/projects/laxmi-heights`  | The project: overview, highlights, amenities, configuration, floor plans, virtual tour, connectivity |
 | `/contact`                 | Contact channels, enquiry form, office location                    |
 | `/career`                  | Role groups and the application form                               |
@@ -48,7 +72,8 @@ site keeps those separate, and so does the content layer:
   project page. Adding a second project means adding a `lib/<project>.ts` and an
   entry in `lib/projects.ts`; nothing on Home needs to change.
 
-Deep links work: `/projects#ongoing`, `/projects#upcoming`, `/projects#completed`.
+Deep links work: `/projects#ongoing`, `/projects#upcoming`. A hidden status falls
+back to All Projects.
 
 ### Virtual tour
 
@@ -214,3 +239,14 @@ the client requests it flattened (`/about/__next.about.__PAGE__.txt`). A Node se
 rewrites between the two; a static host cannot, so every `<Link>` prefetch would
 404. The script copies each payload to the flat name as well. Remove it if a future
 Next release makes it unnecessary.
+
+It is a fix-up for **plain static hosting only**. When there is no `out/` it prints
+why and exits 0 rather than failing the build — that is the expected state on a host
+whose own Next adapter overrides `output: "export"` (Vercel, Netlify, Cloudflare),
+where the server rewrites these paths anyway. It also resolves `out/` from its own
+location rather than the working directory, so a host that invokes it from elsewhere
+cannot make it look in the wrong place.
+
+If you are deploying to a plain static host and the log says *skipped*, that is the
+real problem to chase: the host is not producing the export, and there is nothing
+to upload.
