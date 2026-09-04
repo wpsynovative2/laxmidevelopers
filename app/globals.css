@@ -1,26 +1,175 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Design tokens
+   Brand hues are lifted from the live site's Elementor global kit and the
+   Laxmi Developers logo; the sand/cream neutrals are the grounds they sit on.
+--------------------------------------------------------------------------- */
+@theme {
+  /* Brand */
+  --color-forest-950: #07100a;
+  --color-forest-900: #0b2b1c;
+  --color-forest-800: #0e3f29;
+  --color-forest-700: #14593a;
+  --color-forest-600: #1c7049;
+  --color-forest-500: #2a8f5e;
+  --color-lime-500: #9bc53d;
+  --color-lime-400: #b2d95f;
+
+  --color-gold-600: #b8902f;
+  --color-gold-500: #dab144;
+  --color-gold-400: #e6c777;
+
+  --color-ink-900: #121c26;
+  --color-ink-700: #1e2c39;
+  --color-teal-700: #264653;
+  --color-sage-500: #8f988f;
+  --color-slate-muted: #7a7a7a;
+
+  /* Grounds */
+  --color-cream-50: #faf8f3;
+  --color-cream-100: #f4f1e8;
+  --color-cream-200: #eae5d7;
+  --color-cream-300: #ddd6c3;
+
+  /* Type */
+  --font-display: var(--font-playfair), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-rosario), "Rosario", ui-sans-serif, system-ui, sans-serif;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-float-slow: float-slow 7s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.6s linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --header-h: 4.5rem;
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 1rem);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@media (min-width: 1024px) {
+  :root { --header-h: 5.5rem; }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream-50);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Decorative blobs are deliberately positioned past their container's edge.
+     `clip` contains them without creating a scroll container, so the sticky
+     header and the project section-nav keep working (`hidden` would break both). */
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--color-forest-700);
+  color: #fff;
+}
+
+/* Keyboard focus should always be obvious, but not on mouse clicks. */
+:focus-visible {
+  outline: 2px solid var(--color-gold-500);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Locks background scroll while a modal owns the viewport. */
+body[data-modal-open="true"] {
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities
+--------------------------------------------------------------------------- */
+@utility container-x {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-inline: 1.25rem;
+  @media (min-width: 768px) { padding-inline: 2rem; }
+  @media (min-width: 1280px) { padding-inline: 2.5rem; }
+}
+
+/* Small caps eyebrow used above most section headings. */
+@utility eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+/* Gold underline that grows on hover — used by text links. */
+@utility link-underline {
+  background-image: linear-gradient(var(--color-gold-500), var(--color-gold-500));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1.5px;
+  transition: background-size 0.4s var(--ease-out-soft);
+  &:hover { background-size: 100% 1.5px; }
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll reveal — driven by components/ui/Reveal.tsx
+--------------------------------------------------------------------------- */
+/* The hidden state is scoped to `.js`, which the inline script in the root
+   layout adds before first paint. Without JavaScript the observer would never
+   run, so every revealed section must stay visible rather than blank. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s var(--ease-out-soft),
+    transform 0.7s var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.js [data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Never let an un-triggered reveal blank out a printed page. */
+@media print {
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { scroll-behavior: auto; }
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Raw camera/render sources — optimized derivatives live in public/media
+# (regenerate with `npm run images`). Uncomment to keep them out of git.
+/assets/source-images
