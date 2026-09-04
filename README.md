@@ -19,6 +19,7 @@ npm run dev
 | `npm run dev`     | Dev server on <http://localhost:3000>                                    |
 | `npm run build`   | Static export to `out/`, then flattens the prefetch payloads (see below) |
 | `npm run images`  | Regenerates `public/media/` from `assets/source-images/`                 |
+| `npm run intro`   | Re-cuts the intro splash clip (needs `ffmpeg` on PATH)                   |
 | `npm run lint`    | ESLint                                                                   |
 
 `npm run build` writes a plain `out/` folder — upload it to any static host
@@ -110,13 +111,26 @@ All are marked `PLACEHOLDER` in the source:
   stand-ins: publishing fabricated reviews is a consumer-protection exposure for a
   RERA-registered developer.
 
-### Unannounced projects
+### Statuses and unannounced projects
 
-`lib/projects.ts` contains only real projects — currently Laxmi Heights. There are
-no placeholder or filler listings. A category with nothing in it (Upcoming,
-Completed) renders an empty state with a Register Interest CTA instead of a card,
-and the filter tab shows a count of `0`. Add a project to the array and it appears
-in its category automatically.
+`statusOrder` in `lib/projects.ts` controls which statuses the site surfaces, and
+it drives all three places at once: the filter tabs, the summary cards at the top
+of `/projects`, and the footer links. **`completed` is currently withheld** —
+there is nothing to list under it, so rather than pointing visitors at an empty
+category the tab, card and link are all absent, and `/projects#completed` falls
+back to "All Projects". Put `"completed"` back in that array and every one of
+them reappears; `statusMeta.completed` was left untouched.
+
+Upcoming holds one **unrevealed teaser** (`unrevealed: true`). It is a real
+project that has not been announced, so the card says exactly that — "In
+planning", "Under wraps", "To be announced" — rather than inventing
+configurations and prices. It has no detail page, its button reads *Register
+Interest*, and it is kept out of the "Select a Project" dropdown on the forms.
+Give it a real name, facts and an `href` when it is cleared for release, and drop
+the `unrevealed` flag.
+
+A status that ends up with nothing in it still renders an empty state with a
+Register Interest CTA rather than a filler card.
 
 ## Images
 
@@ -125,8 +139,37 @@ resizes and re-encodes them into `public/media/` as WebP (~4.8 MB total), which 
 what the site actually ships. Add a job to `scripts/optimize-images.mjs` to bring a
 new render in.
 
-The two `.mp4` files in `assets/source-images/` are not used — they need transcoding
-before they would be reasonable to serve.
+`Intro-video.mp4` in `assets/source-images/` is the source for the splash below;
+`npm run intro` cuts it down. `LAXMI DEVELOPERS 01.mp4` is a byte-identical copy of
+it and is unused.
+
+## Intro splash
+
+A first-time visitor gets a short full-screen clip before the site
+([`components/layout/IntroVideo.tsx`](components/layout/IntroVideo.tsx)). It plays
+the first **6 seconds** of the brand film, once, then fades out.
+
+- **Once per session.** `sessionStorage["ld-intro-seen"]` is set on dismissal, so it
+  does not replay as the visitor moves around the site. For once *ever* instead,
+  swap that one call for `localStorage`.
+- **Decided before first paint.** The overlay ships in the static HTML so it covers
+  the page with no flash of the site behind it, but the CSS keeps it hidden until
+  the inline script in the root layout sets `data-intro="play"` on `<html>`. Hidden
+  is the safe default: if that script never runs, nobody is trapped behind a video
+  they cannot dismiss.
+- **Skippable four ways** — the Skip button (which takes focus on open), Escape,
+  clicking anywhere, or just waiting.
+- **Never shown** to anyone with `prefers-reduced-motion: reduce`, or without
+  JavaScript. Neither downloads the clip either: `preload="none"` means a hidden
+  overlay costs no bandwidth.
+- **Weight.** The raw film is 1080p25 at ~13.6 Mbps — 24 MB for 14 seconds. The
+  6-second cut ships as `intro.webm` (1.1 MB, preferred) and `intro.mp4` (1.8 MB,
+  fallback); only one is ever fetched. Audio is stripped, since the clip must be
+  muted for autoplay to be allowed at all.
+
+To change the length, edit `DURATION` in
+[`scripts/make-intro.mjs`](scripts/make-intro.mjs) and `PLAY_SECONDS` in the
+component, then re-run `npm run intro`.
 
 ## Design system
 

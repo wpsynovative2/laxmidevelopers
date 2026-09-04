@@ -13,7 +13,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, featured = false, priority = false }: ProjectCardProps) {
-  const { name, location, summary, facts, image, imageAlt, href, status } = project;
+  const { name, location, summary, facts, image, imageAlt, href, status, unrevealed } = project;
 
   return (
     <article
@@ -69,8 +69,16 @@ export function ProjectCard({ project, featured = false, priority = false }: Pro
               <Icon name="arrowRight" className="size-4 transition-transform duration-300 group-hover/link:translate-x-1" />
             </Link>
           )}
-          <EnquireButton project={name} source={`Project card — ${name}`} variant="outline" size="sm">
-            Enquire
+          <EnquireButton
+            project={unrevealed ? undefined : name}
+            source={`Project card — ${name}`}
+            {...(unrevealed
+              ? { title: "Register your interest", subtitle: "We will tell you about our next project before it is listed." }
+              : {})}
+            variant={unrevealed ? "primary" : "outline"}
+            size="sm"
+          >
+            {unrevealed ? "Register Interest" : "Enquire"}
           </EnquireButton>
         </div>
       </div>

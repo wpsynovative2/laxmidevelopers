@@ -23,6 +23,7 @@ const jobs = [
   { src: "Final elevation v1.jpg.jpeg", out: "elevation-e", width: 1800 },
   { src: "Png eliavtion 1.png", out: "elevation-f", width: 1400 },
   { src: "newelevation.jpeg", out: "elevation-wide", width: 1400 },
+  { src: "Building-coverd.png", out: "project-unrevealed", width: 1600 },
 
   // --- People / company ----------------------------------------------------
   { src: "Nilesh Sir My version.png", out: "founder-portrait", width: 900 },

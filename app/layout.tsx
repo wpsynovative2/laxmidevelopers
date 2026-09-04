@@ -4,6 +4,7 @@ import { JsonLd, organizationSchema } from "@/components/JsonLd";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { FloatingCta } from "@/components/layout/FloatingCta";
+import { IntroVideo } from "@/components/layout/IntroVideo";
 import { ModalProvider } from "@/components/modals/ModalProvider";
 import { site } from "@/lib/site";
 import "./globals.css";
@@ -53,7 +54,22 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Runs before first paint. Scroll-reveal only hides content under `.js`,
           so a visitor without JavaScript sees every section instead of a blank page.
         */}
-        <script dangerouslySetInnerHTML={{ __html: `document.documentElement.classList.add("js")` }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              // Runs before first paint. The `js` class gates scroll-reveal, so
+              // a visitor without JavaScript sees every section instead of a
+              // blank page. `data-intro="play"` is the single switch that
+              // reveals the intro splash: set only on a first visit in this
+              // session, and never when the visitor has asked for less motion.
+              // Everyone else — including anyone this script never reaches —
+              // gets the site with no overlay at all.
+              'document.documentElement.classList.add("js");' +
+              'var seen=false;try{seen=sessionStorage.getItem("ld-intro-seen")==="1"}catch(e){}' +
+              'if(!seen&&!matchMedia("(prefers-reduced-motion: reduce)").matches)' +
+              'document.documentElement.dataset.intro="play";',
+          }}
+        />
         <JsonLd data={organizationSchema} />
       </head>
       <body className="flex min-h-full flex-col">
@@ -63,6 +79,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
+
+        <IntroVideo />
 
         <ModalProvider>
           <Header />

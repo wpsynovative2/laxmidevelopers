@@ -13,7 +13,7 @@ import { projectsByStatus, statusMeta, statusOrder } from "@/lib/projects";
 export const metadata: Metadata = {
   title: "Projects",
   description:
-    "Upcoming, ongoing and completed developments by Laxmi Developers, including Laxmi Heights — an ongoing residential tower in Bhandup West, Mumbai.",
+    "Ongoing and upcoming developments by Laxmi Developers, including Laxmi Heights — an ongoing residential tower in Bhandup West, Mumbai.",
 };
 
 export default function ProjectsPage() {
@@ -23,10 +23,10 @@ export default function ProjectsPage() {
         eyebrow="Our projects"
         title={
           <>
-            Upcoming, ongoing and <Accent>delivered.</Accent>
+            Taking shape, and <Accent>coming next.</Accent>
           </>
         }
-        lede="Developments that reflect experience, vision and long-term value creation — from the tower taking shape today to the addresses still on the drawing board."
+        lede="Developments that reflect experience, vision and long-term value creation — from the tower going up today to the address still under wraps."
         image="/media/elevation-c.webp"
         imageAlt="Elevation study of a Laxmi Developers residential tower"
         crumbs={[{ label: "Projects" }]}
@@ -39,9 +39,10 @@ export default function ProjectsPage() {
         </CtaButton>
       </PageHero>
 
-      {/* Three doors into the catalogue. */}
+      {/* One door per surfaced status — see `statusOrder` in lib/projects.ts. Both
+          column classes are written out so Tailwind keeps them when the set changes. */}
       <Section spacing="sm">
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className={`grid gap-5 ${statusOrder.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
           {statusOrder.map((status, i) => {
             const meta = statusMeta[status];
             const count = projectsByStatus(status).length;

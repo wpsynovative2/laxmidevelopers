@@ -95,9 +95,33 @@ body {
   border-radius: 2px;
 }
 
-/* Locks background scroll while a modal owns the viewport. */
-body[data-modal-open="true"] {
+/* Locks background scroll while a modal or the intro splash owns the viewport. */
+body[data-modal-open="true"],
+body[data-intro-open="true"] {
   overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+   Intro splash — components/layout/IntroVideo.tsx
+--------------------------------------------------------------------------- */
+/* The overlay ships in the static HTML so it covers the page from the first
+   paint, but it starts hidden and is opted *in* by the pre-paint script in the
+   root layout. Hiding by default is the safe direction: if that script never
+   runs — JavaScript off, or it threw — the visitor gets the site rather than an
+   undismissable video. The script only opts in on a first visit with motion
+   allowed. */
+[data-intro-overlay] {
+  display: none;
+}
+html[data-intro="play"] [data-intro-overlay] {
+  display: flex;
+}
+[data-intro-overlay] {
+  transition: opacity var(--intro-fade, 500ms) var(--ease-out-soft);
+}
+[data-intro-overlay][data-state="out"] {
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* ---------------------------------------------------------------------------
