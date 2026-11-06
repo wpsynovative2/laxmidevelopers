@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { JsonLd, laxmiHeightsSchema } from "@/components/JsonLd";
 import { EnquiryForm } from "@/components/forms/EnquiryForm";
+import { AutoEnquiry } from "@/components/projects/AutoEnquiry";
 import { PlanGallery } from "@/components/projects/PlanGallery";
 import { SectionNav } from "@/components/projects/SectionNav";
 import { StatusBadge } from "@/components/projects/StatusBadge";
@@ -28,6 +29,11 @@ export default function LaxmiHeightsPage() {
   return (
     <>
       <JsonLd data={laxmiHeightsSchema} />
+      <AutoEnquiry
+        storageKey="lh-auto-enquiry-shown"
+        project={lh.name}
+        source="Laxmi Heights auto popup"
+      />
 
       {/* ----------------------------------------------------------------- Hero */}
       <Band tone="forest" pad="lg">
@@ -240,92 +246,6 @@ export default function LaxmiHeightsPage() {
           </Reveal>
         </div>
       </Section>
-
-      {/* ------------------------------------------------------ About developer */}
-      <Band id="about" tone="sand" pad="lg" className="scroll-mt-32">
-        <DotGrid
-          className="top-10 right-8 h-20 w-32"
-          tone="text-forest-700/18"
-        />
-
-        <div className="grid items-center gap-12 lg:grid-cols-[1fr_0.9fr] lg:gap-16">
-          <Reveal>
-            {/* The render's own 16:9 — a 4:3 frame cropped a quarter off its width. */}
-            <ArchFrame variant="soft" className="aspect-[1358/764] w-full">
-              <Image
-                src={lh.about.image}
-                alt={lh.about.imageAlt}
-                fill
-                sizes="(min-width:1024px) 53vw, 100vw"
-                className="object-cover"
-              />
-            </ArchFrame>
-          </Reveal>
-
-          <div>
-            <SectionHeading
-              eyebrow="The developer behind this project"
-              title={
-                <>
-                  Foundation of quality &amp; <Accent>transparency.</Accent>
-                </>
-              }
-            />
-            <div className="mt-6 space-y-5">
-              {lh.about.body.map((paragraph, i) => (
-                <Reveal key={i} delay={i * 90}>
-                  <p className="text-[0.94rem] leading-relaxed text-ink-700/85 text-pretty">
-                    {paragraph}
-                  </p>
-                </Reveal>
-              ))}
-            </div>
-            <Reveal delay={250}>
-              <div className="mt-9 flex flex-wrap gap-3">
-                <CtaButton href="/about" variant="primary" size="md">
-                  About {site.name}
-                </CtaButton>
-                <CtaButton href="/projects" variant="outline" size="md">
-                  All Projects
-                </CtaButton>
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </Band>
-
-      {/* ----------------------------------------------------------- Highlights */}
-      <Band id="highlights" tone="forest" pad="lg" className="scroll-mt-32">
-        <Blob
-          className="-top-32 -left-24 size-[30rem]"
-          tone="text-forest-600/25"
-        />
-
-        <SectionHeading
-          eyebrow="Project highlights"
-          title="Designed to offer peace of mind and future growth"
-          tone="light"
-          align="center"
-        />
-
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {lh.highlights.map((highlight, i) => (
-            <Reveal key={highlight.title} delay={i * 80}>
-              <article className="group h-full rounded-[1.75rem] border border-cream-200/12 bg-cream-50/5 p-7 backdrop-blur-sm transition-all duration-500 ease-[var(--ease-out-soft)] hover:-translate-y-1.5 hover:border-gold-500/40 hover:bg-cream-50/10">
-                <span className="flex size-14 items-center justify-center rounded-full bg-gold-500/15 text-gold-400 transition-colors duration-500 group-hover:bg-gold-500 group-hover:text-ink-900">
-                  <Icon name={highlight.icon as IconName} className="size-6" />
-                </span>
-                <h3 className="mt-6 font-display text-lg text-cream-50">
-                  {highlight.title}
-                </h3>
-                <p className="mt-2.5 text-[0.87rem] leading-relaxed text-cream-200/70">
-                  {highlight.body}
-                </p>
-              </article>
-            </Reveal>
-          ))}
-        </div>
-      </Band>
 
       {/* ------------------------------------------------------------ Amenities */}
       <Section id="amenities" spacing="lg" className="scroll-mt-32">

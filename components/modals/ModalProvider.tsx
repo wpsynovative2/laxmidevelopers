@@ -16,6 +16,8 @@ export interface EnquiryOptions {
 
 interface ModalContextValue {
   openEnquiry: (options?: EnquiryOptions) => void;
+  /** Opens the enquiry popup only if no other popup is showing (used for timed auto-open). */
+  offerEnquiry: (options?: EnquiryOptions) => void;
   openLegal: (key: LegalKey) => void;
   close: () => void;
 }
@@ -35,10 +37,17 @@ export function ModalProvider({ children }: { children: ReactNode }) {
   const [active, setActive] = useState<Active>(null);
 
   const openEnquiry = useCallback((options: EnquiryOptions = {}) => setActive({ kind: "enquiry", options }), []);
+  const offerEnquiry = useCallback(
+    (options: EnquiryOptions = {}) => setActive((current) => current ?? { kind: "enquiry", options }),
+    [],
+  );
   const openLegal = useCallback((key: LegalKey) => setActive({ kind: "legal", key }), []);
   const close = useCallback(() => setActive(null), []);
 
-  const value = useMemo(() => ({ openEnquiry, openLegal, close }), [openEnquiry, openLegal, close]);
+  const value = useMemo(
+    () => ({ openEnquiry, offerEnquiry, openLegal, close }),
+    [openEnquiry, offerEnquiry, openLegal, close],
+  );
 
   return (
     <ModalContext value={value}>

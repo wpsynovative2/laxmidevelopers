@@ -47,7 +47,8 @@ export type NavLink = { label: string; href: string };
 export const primaryNav: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
-  { label: "Projects", href: "/projects" },
+  // Hidden from the menu for now. The /projects page still exists; uncomment to show it again.
+  // { label: "Projects", href: "/projects" },
   { label: "Laxmi Heights", href: "/projects/laxmi-heights" },
   { label: "Career", href: "/career" },
   { label: "Contact Us", href: "/contact" },

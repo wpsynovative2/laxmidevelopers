@@ -19,9 +19,7 @@ export const laxmiHeights = {
   },
 
   sections: [
-    { id: "overview", label: "Overview" },
-    { id: "about", label: "About" },
-    { id: "highlights", label: "Highlights" },
+    { id: "overview", label: "Glimpse" },
     { id: "amenities", label: "Amenities" },
     { id: "configuration", label: "Configuration" },
     { id: "floor-plans", label: "Floor Plans" },
